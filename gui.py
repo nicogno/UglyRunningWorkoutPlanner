@@ -43,6 +43,24 @@ def addSimpleBlock():
 
 addSimpleBlock.counter = 0
 
+# Function with a state
+def addIntervalElement():
+    print("I'm inside the element"+str(addIntervalElement.counter))
+    intervalBlock1 = []
+    introLine = []
+    recoveryLine = []
+    introLine.append(sg.InputText(default_text='Interval', k='-Iinterval'+str(addIntervalElement.counter)+'-'))
+    introLine.append(sg.Slider((1,20), orientation='h', s=(50,10), expand_x = False, expand_y = True, k='-SliderInterval'+str(addIntervalElement.counter)+'-', tooltip='Reps'))
+    recoveryLine.append(sg.InputText(default_text='Recovery', k='-Irecovery'+str(addIntervalElement.counter)+'-'))
+    intervalBlock1.append(introLine)
+    intervalBlock1.append(addSimpleBlock())
+    intervalBlock1.append(recoveryLine)
+    intervalBlock1.append(addSimpleBlock())
+    addIntervalElement.counter += 1
+    return intervalBlock1
+
+addIntervalElement.counter = 0
+
 intervalElement = [[sg.InputText(default_text='Interval'), sg.Slider((1,20), orientation='h', s=(50,10), expand_x = False, expand_y = True, k='-SLIDER-', tooltip='Reps')],
 addSimpleBlock(),
 [sg.InputText(default_text='Recovery')],
@@ -117,7 +135,10 @@ while True:
         #3 compute totals
         print(keys_to_clear)
     if event == '-addInterval-':
-        print('')
+        thisIntervalElement = addIntervalElement()
+        for row in thisIntervalElement:
+            window.extend_layout(window['-MainBlock-'], [row])
+        updateKeysToClear()
     if event == '-addRep-':
         window.extend_layout(window['-MainBlock-'], [addSimpleBlock()])
         updateKeysToClear()
