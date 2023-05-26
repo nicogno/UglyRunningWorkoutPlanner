@@ -61,7 +61,7 @@ def addIntervalElement():
 
 addIntervalElement.counter = 0
 
-intervalElement = [[sg.InputText(default_text='Interval'), sg.Slider((1,20), orientation='h', s=(50,10), expand_x = False, expand_y = True, k='-SLIDER-', tooltip='Reps')],
+intervalElement = [[sg.InputText(default_text='Interval'), sg.Slider((1,20), orientation='h', s=(50,10), expand_x = False, expand_y = False, k='-SLIDER-', tooltip='Reps')],
 addSimpleBlock(),
 [sg.InputText(default_text='Recovery')],
 addSimpleBlock()]
@@ -71,7 +71,7 @@ introBlock = [[sg.Text('Workout'), sg.VerticalSeparator(k='-VER1-'), sg.Text('Na
 
 totalsBlock = [[sg.Text('Totals')],
 [sg.Text(pace_text), sg.InputText(readonly = True, k='-TotalPace-'), sg.Text('Distance'), sg.InputText(readonly = True, k='-TotalDistance-'), sg.Text(time_text), sg.InputText(readonly = True, k='-TotalTime-')],
-[sg.Button('Compute'), sg.Button('Cancel'), sg.VerticalSeparator(k='-VER3-'), sg.Button('Save to library'), sg.Button('Add interval', enable_events=True, key="-addInterval-"), sg.Button('Add rep', enable_events=True, key="-addRep-")],
+[sg.Button('Compute'), sg.Button('Cancel'), sg.Button('Reset'), sg.VerticalSeparator(k='-VER3-'), sg.Button('Save to library'), sg.VerticalSeparator(k='-VER4-'), sg.Button('Add interval', enable_events=True, key="-addInterval-"), sg.Button('Add rep', enable_events=True, key="-addRep-")],
 [sg.HorizontalSeparator(k='-HOR4-')]]
 
 mainBlock = [[sg.InputText(default_text='Warm up')],
@@ -83,11 +83,6 @@ lastBlock = [[sg.HorizontalSeparator(k='-HOR3-')],
 [sg.InputText(default_text='Cool down')],
 addSimpleBlock()]
     
-
-tab1 = [  [sg.Column(introBlock, key='-introBlock-')],
-            [sg.Column(totalsBlock, key='-TotalsBlock-')],
-            [sg.Column(mainBlock, key='-MainBlock-')],
-            [sg.Column(lastBlock, key='-LastBlock-')]]
 
 # Clearing section
 keys_to_clear = []
@@ -107,15 +102,27 @@ def updateKeysToClear():
         keys_to_clear.append(this_pace_key)
     last_value = addSimpleBlock.counter-1
 
-tab2 = [[sg.VerticalSeparator(k='-VER1-')]]
+def getFreshLayout():
+    # TAB 1
+    tab1 = [  [sg.Column(introBlock, key='-introBlock'+str(getFreshLayout.counter)+'-')],
+    [sg.Column(totalsBlock, key='-TotalsBlock'+str(getFreshLayout.counter)+'-')],
+    [sg.Column(mainBlock, key='-MainBlock'+str(getFreshLayout.counter)+'-')],
+    [sg.Column(lastBlock, key='-LastBlock'+str(getFreshLayout.counter)+'-')]]
+    # TAB 2
+    tab2 = [[sg.VerticalSeparator(k='-Tab2VER'+str(getFreshLayout.counter)+'-')]]
+    # Main layout
+    layout = [[sg.TabGroup([
+    [sg.Tab('Plan workout', tab1),
+    sg.Tab('Library', tab2)]], key='-Layout'+str(getFreshLayout.counter)+'-')]
+    ]
 
-layout = [[sg.TabGroup([
-   [sg.Tab('Plan workout', tab1),
-   sg.Tab('Library', tab2)]])]
-]
+    getFreshLayout.counter += 1
+    return layout
+
+getFreshLayout.counter = 0
 
 # Create the Window
-window = sg.Window('Ugly running workout planner', layout)
+window = sg.Window('Ugly running workout planner', getFreshLayout())
 
 # Event Loop to process "events" and get the "values" of the inputs
 while True:
@@ -137,10 +144,13 @@ while True:
     if event == '-addInterval-':
         thisIntervalElement = addIntervalElement()
         for row in thisIntervalElement:
-            window.extend_layout(window['-MainBlock-'], [row])
+            window.extend_layout(window['-MainBlock'+str(getFreshLayout.counter-1)+'-'], [row])
         updateKeysToClear()
     if event == '-addRep-':
-        window.extend_layout(window['-MainBlock-'], [addSimpleBlock()])
+        window.extend_layout(window['-MainBlock'+str(getFreshLayout.counter-1)+'-'], [addSimpleBlock()])
+        updateKeysToClear()
+    if event == 'Reset':
+        window.layout(getFreshLayout())
         updateKeysToClear()
 
 window.close()
